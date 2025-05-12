@@ -18,11 +18,12 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
     console.log("Socket ID: " + socket.id);
 
+    // When I create a room, create the room and then send back the room code
     socket.on("create_room", () => {
         // Generate four random numbers as the room code
         let roomCode = Math.floor(1000 + Math.random() * 9000);
         socket.join(roomCode);
-        socket.emit("update_room_code", roomCode);
+        socket.emit("host_created_room", roomCode);
 
         console.log(`User with ID: ${socket.id} created room ${roomCode}`);
     });
