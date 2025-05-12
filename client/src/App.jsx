@@ -21,7 +21,7 @@ const SocketProvider = ({ children }) => {
 
     // Create socket connection
     useEffect(() => {
-        const socket = io("http://localhost:3001");
+        const socket = io("http://192.168.4.21:3001");
         socketRef.current = socket;
 
         socket.on("connect", () => {
@@ -38,7 +38,7 @@ const SocketProvider = ({ children }) => {
     if (!isReady || !socketRef.current) {
         return (
             <div
-                className="h-screen w-screen bg-size-[1200px] flex flex-col justify-center items-center gap-8"
+                className="h-dvh w-screen bg-cover bg-center flex flex-col justify-center items-center gap-8"
                 style={{ backgroundImage: `url(${desktopBackground})` }}
             >
                 <Spinner></Spinner>
@@ -49,7 +49,7 @@ const SocketProvider = ({ children }) => {
     return (
         <SocketContext.Provider value={socketRef.current}>
             <div
-                className="h-screen w-screen bg-size-[1200px] flex flex-col justify-center items-center gap-8"
+                className="h-dvh w-screen bg-cover bg-center flex flex-col justify-center items-center gap-8 text-[#0c0c0c]"
                 style={{ backgroundImage: `url(${desktopBackground})` }}
             >
                 {children}

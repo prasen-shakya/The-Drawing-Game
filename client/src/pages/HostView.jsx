@@ -4,7 +4,7 @@ import PlayerList from "../components/hostComponents/PlayerList";
 
 const HostView = () => {
     const { roomCode } = useParams();
-    const [players, setPlayers] = useState(["Player1"]);
+    const [players, setPlayers] = useState([]);
 
     return (
         <>
