@@ -1,37 +1,27 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
+import Spinner from "../components/Spinner";
 import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
-import desktopBackground from "../assets/desktop-background.png";
+import { useSocket } from "../App";
 
 const Home = () => {
-    const socketRef = useRef(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        socketRef.current = io("http://localhost:3001");
+    const socket = useSocket();
 
-        socketRef.current.on("host_created_room", (roomCode) => {
-            navigate(`/host/${roomCode}`);
-        });
-
-        return () => {
-            socketRef.current.disconnect();
-        };
-    }, []);
+    socket.on("host_created_room", (roomCode) => {
+        navigate(`/host/${roomCode}`);
+    });
 
     function hostGame() {
-        if (socketRef.current) {
-            socketRef.current.emit("create_room");
+        if (socket) {
+            socket.emit("create_room");
         } else {
             console.error("Socket not initialized");
         }
     }
 
     return (
-        <div
-            className="h-screen w-screen bg-size-[1200px] flex flex-col justify-center items-center gap-8"
-            style={{ backgroundImage: `url(${desktopBackground})` }}
-        >
+        <>
             <img
                 className="h-[150px] w-[500px] transition-all"
                 src="/logo.svg"
@@ -43,7 +33,7 @@ const Home = () => {
             >
                 HOST GAME
             </button>
-        </div>
+        </>
     );
 };
 

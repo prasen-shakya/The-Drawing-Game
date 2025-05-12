@@ -15,22 +15,41 @@ const io = new Server(server, {
     },
 });
 
+// Room logic stuff
+let rooms = new Set();
+
+function generateRoom(hostSocket) {
+    // Generate four random numbers as the room code
+    let roomCode = Math.floor(1000 + Math.random() * 9000);
+
+    // Use another room code if that one exists
+    while (rooms.has(roomCode)) {
+        roomCode = Math.floor(1000 + Math.random() * 9000);
+    }
+
+    rooms.add(roomCode);
+
+    // Dealing with host disconnecting
+    hostSocket.on("disconnect", () => {
+        // TODO: Notify the players the host disconnected.`
+        rooms.delete(roomCode);
+        console.log(`Room ${roomCode} deleted because the host disconnected.`);
+    });
+
+    hostSocket.join(roomCode);
+    hostSocket.emit("host_created_room", roomCode);
+    console.log(`User with ID: ${hostSocket.id} created room ${roomCode}`);
+}
+
 io.on("connection", (socket) => {
     console.log("Socket ID: " + socket.id);
 
     // When I create a room, create the room and then send back the room code
     socket.on("create_room", () => {
-        // Generate four random numbers as the room code
-        let roomCode = Math.floor(1000 + Math.random() * 9000);
-        socket.join(roomCode);
-        socket.emit("host_created_room", roomCode);
-
-        console.log(`User with ID: ${socket.id} created room ${roomCode}`);
+        generateRoom(socket);
     });
 
-    socket.on("send_message", (data) => {
-        //socket.to(data.room).emit("receive_message", data);
-    });
+    //socket.to(data.room).emit("receive_message", data);
 
     socket.on("disconnect", () => {
         console.log("User disconncted", socket.id);
