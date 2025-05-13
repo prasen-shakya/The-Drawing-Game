@@ -16,8 +16,6 @@ const io = new Server(server, {
         origin: "http://192.168.4.21:3000",
         methods: ["GET", "POST"],
     },
-    pingInterval: 1000, // send ping every 10s
-    pingTimeout: 2000, // consider disconnected if no pong in 5s
 });
 
 // -----------------------------
@@ -89,7 +87,6 @@ function closeRoom(roomCode) {
     const room = rooms.get(roomCode);
     if (!room) return;
 
-    io.to(roomCode).emit("room_closed");
     io.socketsLeave(roomCode);
     rooms.delete(roomCode);
 
@@ -104,6 +101,10 @@ io.on("connection", (socket) => {
 
     socket.on("create_room", (callback) => {
         generateRoom(socket, callback);
+    });
+
+    socket.on("check_room_exists", (roomCode, callback) => {
+        callback(rooms.has(roomCode));
     });
 
     socket.on("join_room", (roomCode, username, callback) => {

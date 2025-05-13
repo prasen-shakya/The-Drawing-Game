@@ -13,7 +13,17 @@ const HostView = () => {
     const { roomCode } = useParams(); // Get room code from the URL
     const [players, setPlayers] = useState([]); // Track list of players in the room
 
+    const navigate = useNavigate(); // Hook for  navigation
     const socket = useSocket(); // Get socket instance from context
+
+    // ----------------------------
+    // Check if Room Code Exists
+    // ----------------------------
+    socket.emit("check_room_exists", roomCode, (response) => {
+        if (!response) {
+            navigate("/"); // Navigate to the home
+        }
+    });
 
     // -----------------------------
     // Socket Listener Setup
