@@ -3,6 +3,8 @@ const http = require("http");
 const cors = require("cors");
 const { Server } = require("socket.io");
 
+require("dotenv").config();
+
 // -----------------------------
 // Set up
 // -----------------------------
@@ -13,7 +15,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: "http://192.168.4.21:3000",
+        origin: process.env.CLIENT_URL,
         methods: ["GET", "POST"],
     },
 });
@@ -132,6 +134,6 @@ io.on("connection", (socket) => {
 // -----------------------------
 // Run Server
 // -----------------------------
-server.listen(3001, () => {
-    console.log("🚀 SERVER RUNNING ON PORT 3001");
+server.listen(process.env.SERVER_PORT, () => {
+    console.log("🚀 SERVER RUNNING ON PORT ", process.env.SERVER_PORT);
 });

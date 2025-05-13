@@ -11,6 +11,7 @@ import HostView from "./pages/HostView";
 import PlayerView from "./pages/PlayerView";
 import Spinner from "./components/Spinner";
 
+const serverURL = import.meta.env.VITE_SERVER_URL;
 // -----------------------------
 // Socket Context Setup
 // -----------------------------
@@ -31,7 +32,7 @@ const SocketProvider = ({ children }) => {
     // -----------------------------
     useEffect(() => {
         // Create and establish the socket connection
-        const socket = io("http://192.168.4.21:3001");
+        const socket = io(serverURL);
         socketRef.current = socket;
 
         socket.on("connect", () => {
