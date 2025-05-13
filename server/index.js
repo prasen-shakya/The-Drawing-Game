@@ -129,6 +129,9 @@ io.on("connection", (socket) => {
     });
 });
 
+// -----------------------------
+// Run Server
+// -----------------------------
 server.listen(3001, () => {
     console.log("🚀 SERVER RUNNING ON PORT 3001");
 });
