@@ -1,6 +1,49 @@
-import React from "react";
+// -----------------------------
+// Imports
+// -----------------------------
+import React, { useState } from "react";
+import { useSocket } from "../App";
+import RoomForm from "../components/playerComponents/RoomForm";
+import Spinner from "../components/Spinner";
 
+// -----------------------------
+// PlayerView Component
+// -----------------------------
 const PlayerView = () => {
+    const [inRoom, setInRoom] = useState(false); // Track if the player has joined a room
+    const socket = useSocket(); // Get socket instance from context
+
+    // -----------------------------
+    // Join Room Handler
+    // -----------------------------
+    function joinRoom(roomCode, username) {
+        socket.emit("join_room", roomCode, username, (response) => {
+            setInRoom(response); // Update state based on server response
+        });
+    }
+
+    // -----------------------------
+    // Conditional UI Rendering
+    // -----------------------------
+    const renderContent = () => {
+        if (!inRoom) {
+            return <RoomForm joinRoom={joinRoom} />;
+        }
+
+        // Show waiting screen after joining
+        return (
+            <>
+                <p className="text-3xl font-bold text-stone-900 tracking-wide">
+                    Waiting For Host...
+                </p>
+                <Spinner />
+            </>
+        );
+    };
+
+    // -----------------------------
+    // Render Component
+    // -----------------------------
     return (
         <>
             <img
@@ -8,44 +51,7 @@ const PlayerView = () => {
                 src="/logo.svg"
                 alt="The drawing game logo"
             />
-
-            <form>
-                <div className="flex flex-col gap-4">
-                    <div>
-                        <label
-                            for="room_code"
-                            class="block mb-2 text-xl font-semibold text-[#4E8098]"
-                        >
-                            Room Code
-                        </label>
-                        <input
-                            type="text"
-                            id="room_code"
-                            class="text-xl bg-[#FCF7F8] border-[#B7B7B7] border-3 px-5 py-3 rounded-2xl font-semibold placeholder:text-[text-[#807C7C]]"
-                            placeholder="Enter Room Code"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label
-                            for="player_name"
-                            class="block mb-2 text-xl font-semibold text-[#4E8098]"
-                        >
-                            Name
-                        </label>
-                        <input
-                            type="text"
-                            id="player_name"
-                            class="text-xl bg-[#FCF7F8] border-[#B7B7B7] border-3 px-5 py-3 rounded-2xl font-semibold placeholder:text-[text-[#807C7C]]"
-                            placeholder="Enter Player Name"
-                            required
-                        />
-                    </div>
-                    <button className="h-15 bg-[#4E8098] font-bold rounded text-3xl transition-all text-[#FCF7F8] hover:cursor-pointer mt-4">
-                        START GAME
-                    </button>
-                </div>
-            </form>
+            {renderContent()}
         </>
     );
 };

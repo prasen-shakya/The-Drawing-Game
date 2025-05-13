@@ -1,9 +1,12 @@
 const express = require("express");
-const app = express();
 const http = require("http");
 const cors = require("cors");
 const { Server } = require("socket.io");
 
+// -----------------------------
+// Set up
+// -----------------------------
+const app = express();
 app.use(cors());
 
 const server = http.createServer(app);
@@ -13,49 +16,118 @@ const io = new Server(server, {
         origin: "http://192.168.4.21:3000",
         methods: ["GET", "POST"],
     },
+    pingInterval: 1000, // send ping every 10s
+    pingTimeout: 2000, // consider disconnected if no pong in 5s
 });
 
-// Room logic stuff
-let rooms = new Set();
+// -----------------------------
+// Room Management
+// -----------------------------
+const rooms = new Map(); // roomCode -> { host: socket, players: Map<socket.id, username> }
 
-function generateRoom(hostSocket) {
-    // Generate four random numbers as the room code
-    let roomCode = Math.floor(1000 + Math.random() * 9000);
+function generateRoom(socket, callback) {
+    let roomCode;
 
-    // Use another room code if that one exists
-    while (rooms.has(roomCode)) {
-        roomCode = Math.floor(1000 + Math.random() * 9000);
-    }
+    // Generate unique 4-digit code
+    do {
+        roomCode = Math.floor(1000 + Math.random() * 9000).toString();
+    } while (rooms.has(roomCode));
 
-    rooms.add(roomCode);
-
-    // Dealing with host disconnecting
-    hostSocket.on("disconnect", () => {
-        // TODO: Notify the players the host disconnected.`
-        rooms.delete(roomCode);
-        console.log(`Room ${roomCode} deleted because the host disconnected.`);
+    rooms.set(roomCode, {
+        host: socket,
+        players: new Map(),
     });
 
-    hostSocket.join(roomCode);
-    hostSocket.emit("host_created_room", roomCode);
-    console.log(`User with ID: ${hostSocket.id} created room ${roomCode}`);
+    socket.data.roomCode = roomCode;
+    socket.data.role = "host";
+
+    socket.join(roomCode);
+
+    callback(roomCode);
+
+    console.log(`Host [${socket.id}] created room ${roomCode}`);
 }
 
-io.on("connection", (socket) => {
-    console.log("Socket ID: " + socket.id);
+function addPlayer(socket, username, roomCode) {
+    if (!rooms.has(roomCode)) {
+        return false;
+    }
 
-    // When I create a room, create the room and then send back the room code
-    socket.on("create_room", () => {
-        generateRoom(socket);
+    const room = rooms.get(roomCode);
+
+    socket.data.username = username;
+    socket.data.roomCode = roomCode;
+    socket.data.role = "player";
+
+    room.players.set(socket.id, username);
+    socket.join(roomCode);
+
+    // Notify others and send success
+    socket
+        .to(roomCode)
+        .emit("players_in_room_changed", Array.from(room.players.values()));
+
+    console.log(`Player ${username} joined room ${roomCode}`);
+    return true;
+}
+
+function removePlayer(socket) {
+    const roomCode = socket.data.roomCode;
+    const username = socket.data.username;
+    if (!roomCode || !username || !rooms.has(roomCode)) return;
+
+    const room = rooms.get(roomCode);
+    room.players.delete(socket.id);
+
+    socket
+        .to(roomCode)
+        .emit("players_in_room_changed", Array.from(room.players.values()));
+    console.log(`Player ${username} left room ${roomCode}`);
+}
+
+function closeRoom(roomCode) {
+    const room = rooms.get(roomCode);
+    if (!room) return;
+
+    io.to(roomCode).emit("room_closed");
+    io.socketsLeave(roomCode);
+    rooms.delete(roomCode);
+
+    console.log(`Room ${roomCode} closed (host disconnected)`);
+}
+
+// -----------------------------
+// Socket Event Handling
+// -----------------------------
+io.on("connection", (socket) => {
+    console.log("Socket connected:", socket.id);
+
+    socket.on("create_room", (callback) => {
+        generateRoom(socket, callback);
     });
 
-    //socket.to(data.room).emit("receive_message", data);
+    socket.on("join_room", (roomCode, username, callback) => {
+        // Let the user know if they were successful in joining the room
+        callback(addPlayer(socket, username, roomCode));
+    });
 
     socket.on("disconnect", () => {
-        console.log("User disconncted", socket.id);
+        console.log(`Socket ${socket.id} disconnected`);
+
+        const role = socket.data.role;
+        const roomCode = socket.data.roomCode;
+
+        if (!roomCode) return;
+
+        // If the player/host was in a room
+        if (role === "host") {
+            closeRoom(roomCode);
+        } else if (role === "player") {
+            removePlayer(socket);
+        }
     });
 });
 
 server.listen(3001, () => {
-    console.log("SERVER RUNNING ON PORT 3001");
+    console.log("🚀 SERVER RUNNING ON PORT 3001");
 });

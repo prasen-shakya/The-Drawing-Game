@@ -1,5 +1,11 @@
+// -----------------------------
+// Imports
+// -----------------------------
 import React from "react";
 
+// -----------------------------
+// Spinner Component
+// -----------------------------
 const Spinner = () => {
     return (
         <div role="status">

@@ -1,25 +1,34 @@
+// -----------------------------
+// Imports
+// -----------------------------
 import React, { useState, useEffect, useRef, useContext } from "react";
 import Spinner from "../components/Spinner";
 import { useNavigate } from "react-router-dom";
 import { useSocket } from "../App";
 
+// -----------------------------
+// Home Component
+// -----------------------------
 const Home = () => {
-    const navigate = useNavigate();
+    const navigate = useNavigate(); // Hook for programmatic navigation
+    const socket = useSocket(); // Get socket instance from context
 
-    const socket = useSocket();
-
-    socket.on("host_created_room", (roomCode) => {
-        navigate(`/host/${roomCode}`);
-    });
-
+    // -----------------------------
+    // Host Game Handler
+    // -----------------------------
     function hostGame() {
         if (socket) {
-            socket.emit("create_room");
+            socket.emit("create_room", (roomCode) => {
+                navigate(`/host/${roomCode}`); // Navigate to the host page with room code
+            });
         } else {
             console.error("Socket not initialized");
         }
     }
 
+    // -----------------------------
+    // Render Component
+    // -----------------------------
     return (
         <>
             <img
