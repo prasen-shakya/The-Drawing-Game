@@ -48,6 +48,9 @@ function generateRoom(socket, callback) {
     console.log(`Host [${socket.id}] created room ${roomCode}`);
 }
 
+// -----------------------------
+// Add player into a room
+// -----------------------------
 function addPlayer(socket, username, roomCode) {
     if (!rooms.has(roomCode)) {
         return false;
@@ -71,6 +74,9 @@ function addPlayer(socket, username, roomCode) {
     return true;
 }
 
+// -----------------------------
+// Remove player from a room
+// -----------------------------
 function removePlayer(socket) {
     const roomCode = socket.data.roomCode;
     const username = socket.data.username;
@@ -85,6 +91,9 @@ function removePlayer(socket) {
     console.log(`Player ${username} left room ${roomCode}`);
 }
 
+// -----------------------------
+// Close a room when host disconnects
+// -----------------------------
 function closeRoom(roomCode) {
     const room = rooms.get(roomCode);
     if (!room) return;
