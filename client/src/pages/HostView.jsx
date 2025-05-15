@@ -4,7 +4,8 @@
 import React, { useState, useEffect } from "react";
 import { useSocket } from "../App";
 import { useNavigate, useParams } from "react-router-dom";
-import PlayerList from "../components/hostComponents/PlayerList";
+import WaitingRoom from "../components/hostComponents/WaitingRoom";
+import Spinner from "../components/Spinner";
 
 // -----------------------------
 // HostView Component
@@ -12,6 +13,7 @@ import PlayerList from "../components/hostComponents/PlayerList";
 const HostView = () => {
     const { roomCode } = useParams(); // Get room code from the URL
     const [players, setPlayers] = useState([]); // Track list of players in the room
+    const [gameState, setGameState] = useState("waiting");
 
     const navigate = useNavigate(); // Hook for  navigation
     const socket = useSocket(); // Get socket instance from context
@@ -45,6 +47,45 @@ const HostView = () => {
     }, []);
 
     // -----------------------------
+    // Start Game Logic
+    // -----------------------------
+    function startGame() {
+        if (players.length < 1) {
+            return;
+        }
+
+        socket.emit("start_game", roomCode, (gameState) => {
+            setGameState(gameState);
+        });
+    }
+
+    // -----------------------------
+    // Conditional UI Rendering
+    // -----------------------------
+    const renderContent = () => {
+        if (gameState == "waiting") {
+            return (
+                <WaitingRoom
+                    players={players}
+                    roomCode={roomCode}
+                    startGame={startGame}
+                ></WaitingRoom>
+            );
+        }
+
+        if (gameState == "pick_image") {
+            return (
+                <>
+                    <p className="text-3xl font-bold text-stone-900 tracking-wide">
+                        Starting Game
+                    </p>
+                    <Spinner />
+                </>
+            );
+        }
+    };
+
+    // -----------------------------
     // Render UI
     // -----------------------------
     return (
@@ -54,19 +95,7 @@ const HostView = () => {
                 src="/logo.svg"
                 alt="The drawing game logo"
             />
-            <div className="flex flex-col gap-4 items-center">
-                <p className="text-3xl font-bold text-stone-900 tracking-wide">
-                    Room Code: {roomCode}
-                </p>
-
-                {/* Display list of joined players */}
-                <PlayerList players={players}></PlayerList>
-
-                {/* Placeholder Start Game button */}
-                <button className="w-[250px] h-[60px] bg-[#4E8098] font-bold rounded text-3xl transition-all hover:scale-[1.02] text-[#FCF7F8] hover:cursor-pointer mt-4">
-                    START GAME
-                </button>
-            </div>
+            {renderContent()}
         </>
     );
 };

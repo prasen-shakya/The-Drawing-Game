@@ -41,6 +41,7 @@ const SocketProvider = ({ children }) => {
         });
 
         return () => {
+            socket.off("connect");
             socket.disconnect(); // Clean up connection on unmount
         };
     }, []);

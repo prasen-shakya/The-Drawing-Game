@@ -68,7 +68,7 @@ const RoomForm = ({ joinRoom }) => {
                     type="submit"
                     className="h-15 bg-[#4E8098] font-bold rounded text-3xl transition-all text-[#FCF7F8] hover:cursor-pointer mt-4"
                 >
-                    START GAME
+                    JOIN GAME
                 </button>
             </div>
         </form>
