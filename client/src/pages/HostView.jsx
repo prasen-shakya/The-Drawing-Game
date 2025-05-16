@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import { useSocket } from "../App";
 import { useNavigate, useParams } from "react-router-dom";
 import WaitingRoom from "../components/hostComponents/WaitingRoom";
-import Spinner from "../components/Spinner";
+import PickImage from "../components/hostComponents/PickImage";
 
 // -----------------------------
 // HostView Component
@@ -59,6 +59,15 @@ const HostView = () => {
         });
     }
 
+    // ----------------------------
+    // Start the Room's Round
+    // ----------------------------
+    function startRound(roundImage) {
+        socket.emit("start_round", roomCode, roundImage, (gameState) => {
+            setGameState(gameState);
+        });
+    }
+
     // -----------------------------
     // Conditional UI Rendering
     // -----------------------------
@@ -74,14 +83,7 @@ const HostView = () => {
         }
 
         if (gameState == "pick_image") {
-            return (
-                <>
-                    <p className="text-3xl font-bold text-stone-900 tracking-wide">
-                        Starting Game
-                    </p>
-                    <Spinner />
-                </>
-            );
+            return <PickImage startGame={startRound}></PickImage>;
         }
     };
 

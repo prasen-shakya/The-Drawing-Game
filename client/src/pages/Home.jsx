@@ -3,6 +3,7 @@
 // -----------------------------
 import React, { useState, useEffect, useRef, useContext } from "react";
 import Spinner from "../components/Spinner";
+import UploadImage from "../components/sharedComponents/UploadImage";
 import { useNavigate } from "react-router-dom";
 import { useSocket } from "../App";
 
