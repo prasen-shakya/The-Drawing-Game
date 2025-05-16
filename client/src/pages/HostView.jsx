@@ -85,6 +85,10 @@ const HostView = () => {
         if (gameState == "pick_image") {
             return <PickImage startGame={startRound}></PickImage>;
         }
+
+        if (gameState == "round_in_progress") {
+            return <div>ROUND STARTED</div>;
+        }
     };
 
     // -----------------------------

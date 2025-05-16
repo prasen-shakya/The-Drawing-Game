@@ -2,11 +2,12 @@
 // Imports
 // -----------------------------
 import React, { useState } from "react";
+import Alert from "../sharedComponents/Alert";
 
 // -----------------------------
 // RoomForm Component
 // -----------------------------
-const RoomForm = ({ joinRoom }) => {
+const RoomForm = ({ joinRoom, message }) => {
     const [roomCode, setRoomCode] = useState(""); // Room code input state
     const [username, setUsername] = useState(""); // Player name input state
 
@@ -22,6 +23,7 @@ const RoomForm = ({ joinRoom }) => {
         >
             <div className="flex flex-col gap-4">
                 {/* Room Code Input */}
+                <Alert message={message}></Alert>
                 <div>
                     <label
                         htmlFor="room_code"
